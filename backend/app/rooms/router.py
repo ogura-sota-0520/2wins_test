@@ -11,7 +11,7 @@ router = APIRouter(prefix="/api/rooms", tags=["rooms"])
 
 @router.get("")
 def list_rooms(db: DbSession, user: CurrentUser) -> list[RoomOut]:
-    """参加中のルームを最新メッセージ順に返す。
+    """参加中のルームを最終更新日時（最新メッセージ、なければ作成日時）の新しい順に返す。
 
     Args:
         db: DB セッション。

@@ -1,6 +1,6 @@
 """ルームの処理本体（1対1のルームの作成・取得、一覧取得、最新メッセージ取得）。"""
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -96,9 +96,10 @@ def get_for_member(db: Session, user: User, room_id: int) -> Room:
 
 
 def list_for_user(db: Session, user: User) -> list[tuple[Room, Message | None]]:
-    """ユーザが参加しているルームを最新メッセージ順に一覧する。
+    """ユーザが参加しているルームを最終更新日時の新しい順に一覧する。
 
-    メッセージのないルームは、メッセージのあるルームの後ろにルーム id 降順で並ぶ。
+    最終更新日時は最新メッセージの送信日時、メッセージのないルームはルームの作成日時。
+    日時が同じ場合はルーム id 降順で並ぶ。
 
     Args:
         db: DB セッション。
@@ -107,14 +108,14 @@ def list_for_user(db: Session, user: User) -> list[tuple[Room, Message | None]]:
     Returns:
         ルームと、その最新メッセージ（なければ None）の組のリスト。
     """
-    # 参加中のルームと最新メッセージの結合、最新メッセージ順の並べ替え
+    # 参加中のルームと最新メッセージの結合、最終更新日時順の並べ替え
     stmt = (
         select(Room, Message)
         .join(RoomMember, RoomMember.room_id == Room.id)
         # last_message_id == NULLのルームも取得するため外部結合
         .outerjoin(Message, Message.id == Room.last_message_id)
         .where(RoomMember.user_id == user.id)
-        .order_by(Room.last_message_id.desc().nulls_last(), Room.id.desc())
+        .order_by(func.coalesce(Message.created_at, Room.created_at).desc(), Room.id.desc())
     )
     return [(room, message) for room, message in db.execute(stmt).all()]
 
