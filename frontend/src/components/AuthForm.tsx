@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState, type SubmitEvent } from "react";
 import { ApiError } from "@/lib/api";
 
@@ -12,7 +13,7 @@ type Props = {
   /** 送信ボタンの文言。 */
   submitLabel: string;
   /** 入力されたユーザ名での送信処理。失敗時は ApiError を投げる。 */
-  onSubmit: (name: string) => Promise<void>;
+  onSubmit: (name: string) => Promise<unknown>;
   /** もう一方の画面へのリンクの文言。 */
   secondaryLabel: string;
   /** もう一方の画面へのリンク先。 */
@@ -23,9 +24,10 @@ type Props = {
  * ログイン・登録で共通のユーザ名入力フォーム。
  *
  * @param props - {@link Props}
- * @returns 入力欄・送信ボタン・画面切り替えリンク。失敗時はエラーを表示する。
+ * @returns 入力欄・送信ボタン・画面切り替えリンク。成功すると /chats へ遷移し、失敗時はエラーを表示する。
  */
 export function AuthForm({ title, submitLabel, onSubmit, secondaryLabel, secondaryHref }: Props) {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -39,9 +41,10 @@ export function AuthForm({ title, submitLabel, onSubmit, secondaryLabel, seconda
     if (!canSubmit) return;
     setSubmitting(true);
     setError(null);
-    // 送信と失敗時のエラー表示（成功時は画面遷移のため送信中のまま）
+    // 送信とチャット画面への遷移、失敗時のエラー表示（成功時は画面遷移のため送信中のまま）
     try {
       await onSubmit(trimmed);
+      router.push("/chats");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "通信に失敗しました");
       setSubmitting(false);
