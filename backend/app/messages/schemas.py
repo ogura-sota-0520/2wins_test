@@ -5,9 +5,13 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
 from app.common import UTCDateTime
+from app.config import params
 
-# 本文の入力制約（前後の空白を除いて 1〜1000 文字）
-_MessageBody = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+# 本文の入力制約（前後の空白を除いて 1〜body_max_length 文字）
+_MessageBody = Annotated[
+    str,
+    StringConstraints(strip_whitespace=True, min_length=1, max_length=params.message.body_max_length),
+]
 
 
 class MessageCreate(BaseModel):

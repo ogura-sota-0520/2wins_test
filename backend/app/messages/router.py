@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.rooms import service as rooms_service
+from app.config import params
 from app.deps import CurrentUser, DbSession
 from app.messages import service
 from app.messages.schemas import MessageCreate, MessageOut, MessagePage
@@ -36,7 +37,7 @@ def list_messages(
     room_id: int,
     db: DbSession,
     user: CurrentUser,
-    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    limit: Annotated[int, Query(ge=1, le=params.message.page_size_max)] = params.message.page_size,
     before_id: int | None = None,
     after_id: int | None = None,
 ) -> MessagePage:
@@ -46,7 +47,7 @@ def list_messages(
         room_id: ルーム id。
         db: DB セッション。
         user: ログイン中のユーザ。
-        limit: 取得する最大件数（1〜100）。
+        limit: 取得する最大件数（1〜page_size_max、既定は page_size）。
         before_id: この id より古いメッセージを取得する（過去ログ）。
         after_id: この id より新しいメッセージを取得する（新着）。
 

@@ -5,11 +5,10 @@ import { useCallback, useState } from "react";
 import { AddRoomForm } from "./AddRoomForm";
 import { RoomList } from "./RoomList";
 import { api } from "@/lib/api";
+import { config } from "@/lib/config";
 import { useMe } from "@/lib/me-context";
 import type { Room } from "@/lib/types";
 import { usePolling } from "@/lib/usePolling";
-
-const ROOMS_POLL_INTERVAL_MS = 3000;
 
 /**
  * サイドバー。ログイン中のユーザ名・ログアウト・ルームの追加・ルーム一覧を表示する。
@@ -30,7 +29,7 @@ export function Sidebar() {
     setRooms(await api.listRooms());
   }, []);
 
-  usePolling(refreshRooms, ROOMS_POLL_INTERVAL_MS);
+  usePolling(refreshRooms, config.polling.roomsIntervalMs);
 
   // ルームの追加と、追加したルームへの遷移
   async function handleAdd(partnerName: string) {

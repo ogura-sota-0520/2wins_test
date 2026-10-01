@@ -4,8 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type SubmitEvent } from "react";
 import { ApiError } from "@/lib/api";
-
-const MAX_NAME_LENGTH = 20;
+import { config } from "@/lib/config";
 
 type Props = {
   /** フォームの見出し。 */
@@ -34,7 +33,7 @@ export function AuthForm({ title, submitLabel, onSubmit, secondaryLabel, seconda
 
   // 送信可否の判定
   const trimmed = name.trim();
-  const canSubmit = trimmed.length > 0 && trimmed.length <= MAX_NAME_LENGTH && !submitting;
+  const canSubmit = trimmed.length > 0 && trimmed.length <= config.user.nameMaxLength && !submitting;
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -61,7 +60,7 @@ export function AuthForm({ title, submitLabel, onSubmit, secondaryLabel, seconda
         <input
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="ユーザ名（20文字以内）"
+          placeholder={`ユーザ名（${config.user.nameMaxLength}文字以内）`}
           autoFocus
           className="rounded border border-black px-3 py-2"
         />

@@ -9,7 +9,7 @@ class Credentials(BaseModel):
     """登録・ログインのリクエストボディ．APIの入力検証に使用．
 
     Attributes:
-        name: ユーザ名（前後の空白を除いて 1〜20 文字）。
+        name: ユーザ名（前後の空白を除いて 1〜params.user.name_max_length 文字）。
     """
 
     name: UserName

@@ -2,8 +2,7 @@
 
 import { useState, type SubmitEvent } from "react";
 import { ApiError } from "@/lib/api";
-
-const MAX_BODY_LENGTH = 1000;
+import { config } from "@/lib/config";
 
 type Props = {
   /** 入力された本文の送信処理。失敗時は ApiError を投げる。 */
@@ -23,7 +22,7 @@ export function MessageForm({ onSend }: Props) {
 
   // 送信可否の判定
   const trimmed = body.trim();
-  const canSend = trimmed.length > 0 && trimmed.length <= MAX_BODY_LENGTH && !sending;
+  const canSend = trimmed.length > 0 && trimmed.length <= config.message.bodyMaxLength && !sending;
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();

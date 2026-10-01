@@ -2,8 +2,7 @@
 
 import { useState, type SubmitEvent } from "react";
 import { ApiError } from "@/lib/api";
-
-const MAX_NAME_LENGTH = 20;
+import { config } from "@/lib/config";
 
 type Props = {
   /** 入力されたユーザ名でルームを追加する処理。失敗時は ApiError を投げる。 */
@@ -23,7 +22,7 @@ export function AddRoomForm({ onAdd }: Props) {
 
   // 送信可否の判定
   const trimmed = name.trim();
-  const canSubmit = trimmed.length > 0 && trimmed.length <= MAX_NAME_LENGTH && !submitting;
+  const canSubmit = trimmed.length > 0 && trimmed.length <= config.user.nameMaxLength && !submitting;
 
   async function handleSubmit(e: SubmitEvent<HTMLFormElement>) {
     e.preventDefault();

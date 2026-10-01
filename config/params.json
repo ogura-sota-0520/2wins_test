@@ -1,0 +1,18 @@
+{
+  "user": {
+    "nameMaxLength": 20
+  },
+  "message": {
+    "bodyMaxLength": 1000,
+    "pageSize": 50,
+    "pageSizeMax": 100
+  },
+  "polling": {
+    "roomsIntervalMs": 3000,
+    "messagesIntervalMs": 2000
+  },
+  "scroll": {
+    "loadOlderThresholdPx": 40,
+    "nearBottomThresholdPx": 80
+  }
+}
