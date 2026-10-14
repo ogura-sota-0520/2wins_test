@@ -114,11 +114,9 @@ npm run dev
 | direct_user_low_id | FOREIGN KEY → users，NULL 可 | 参加者2人のうち小さい方の id |
 | direct_user_high_id | FOREIGN KEY → users，NULL 可 | 参加者2人のうち大きい方の id |
 | created_at | | |
-| last_message_id | FOREIGN KEY → messages，NULL 可 | 最新メッセージ id．なければ NULL |
 
 - `direct_user_low_id`と`direct_user_high_id`の組が UNIQUE
 - `CHECK(direct_user_low_id < direct_user_high_id)`で大小確認
-- `last_message_id`を非正規化して保持 → ルーム一覧画面での最新メッセージ表示を高速化
 - ルーム一覧は `COALESCE(最新メッセージの created_at, rooms.created_at)` の降順で並べる
 
 ### room_members（対話ルーム内のメンバー管理）

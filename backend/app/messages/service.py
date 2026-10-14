@@ -1,17 +1,13 @@
 """メッセージの処理本体（送信・一覧取得）。"""
 
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.messages.models import Message
-from app.rooms.models import Room
 
 
 def send_message(db: Session, room_id: int, sender_id: int, body: str) -> Message:
-    """メッセージを保存し、ルームの最新メッセージ id を更新する。
-
-    SQLite は書き込みトランザクションが同時に1つのため、後にコミットした方が必ず大きい id になり、
-    古い id で上書きされることはない。
+    """メッセージを保存する。
 
     Args:
         db: DB セッション。
@@ -22,12 +18,9 @@ def send_message(db: Session, room_id: int, sender_id: int, body: str) -> Messag
     Returns:
         保存したメッセージ（id と送信日時を含む）。
     """
-    # メッセージの保存（flush で id を確定）
+    # メッセージの保存
     message = Message(room_id=room_id, sender_id=sender_id, body=body)
     db.add(message)
-    db.flush()
-    # ルームの最新メッセージ id の更新（メッセージ保存と同じトランザクション）
-    db.execute(update(Room).where(Room.id == room_id).values(last_message_id=message.id))
     db.commit()
     # Message の created_at などは add 時に作成される → refresh でpython側に反映
     db.refresh(message)

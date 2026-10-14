@@ -2,7 +2,7 @@
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 
 from app.messages.models import Message
 from app.rooms.models import Room, RoomMember
@@ -108,12 +108,17 @@ def list_for_user(db: Session, user: User) -> list[tuple[Room, Message | None]]:
     Returns:
         ルームと、その最新メッセージ（なければ None）の組のリスト。
     """
+    # ルームごとの最新メッセージ id の相関サブクエリ（(room_id, id) インデックスで末尾を1回引くだけ）
+    inner = aliased(Message)
+    last_message_id = (
+        select(func.max(inner.id)).where(inner.room_id == Room.id).correlate(Room).scalar_subquery()
+    )
     # 参加中のルームと最新メッセージの結合、最終更新日時順の並べ替え
     stmt = (
         select(Room, Message)
         .join(RoomMember, RoomMember.room_id == Room.id)
-        # last_message_id == NULLのルームも取得するため外部結合
-        .outerjoin(Message, Message.id == Room.last_message_id)
+        # メッセージのないルームも取得するため外部結合
+        .outerjoin(Message, Message.id == last_message_id)
         .where(RoomMember.user_id == user.id)
         .order_by(func.coalesce(Message.created_at, Room.created_at).desc(), Room.id.desc())
     )
@@ -130,9 +135,10 @@ def get_last_message(db: Session, room: Room) -> Message | None:
     Returns:
         最新メッセージ。まだなければ None。
     """
-    if room.last_message_id is None:
-        return None
-    return db.get(Message, room.last_message_id)
+    # (room_id, id) インデックスの末尾から1件取得
+    return db.scalar(
+        select(Message).where(Message.room_id == room.id).order_by(Message.id.desc()).limit(1)
+    )
 
 
 def _get_direct(db: Session, low_id: int, high_id: int) -> Room | None:
